@@ -119,6 +119,24 @@ export const mimeOrDefault = (path: string): string => {
   return getType(path) || "application/octet-stream";
 };
 
+export const uploadWithRetries = async (
+  gh: GitHub,
+  url: string,
+  path: string
+): Promise<any> => {
+  const retries = 5;
+  for (let i = 0 ; i < retries ; i++) {
+    try {
+      return await upload(gh, url, path);
+    } catch(e) {
+      console.log(`Can't upload ${path}, retrying ${i+1}/${retries}`);
+      console.log(e);
+    }
+  }
+  throw `Can't upload ${path}!`;
+};
+
+
 export const upload = async (
   gh: GitHub,
   url: string,

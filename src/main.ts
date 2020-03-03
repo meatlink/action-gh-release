@@ -1,5 +1,5 @@
 import { paths, parseConfig, isTag } from "./util";
-import { release, upload, GitHubReleaser } from "./github";
+import { release, GitHubReleaser, uploadWithRetries } from "./github";
 import { setFailed, setOutput } from "@actions/core";
 import { GitHub } from "@actions/github";
 import { env } from "process";
@@ -35,9 +35,9 @@ async function run() {
       if (files.length == 0) {
         console.warn(`🤔 ${config.input_files} not include valid file.`);
       }
-      files.forEach(async path => {
-        await upload(gh, rel.upload_url, path);
-      });
+      await Promise.all(
+        files.map(path => uploadWithRetries(gh, rel.upload_url, path))
+      );
     }
     console.log(`🎉 Release ready at ${rel.html_url}`);
     setOutput("url", rel.html_url);
